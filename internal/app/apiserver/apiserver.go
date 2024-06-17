@@ -4,6 +4,8 @@ import (
 	"io"
 	"net/http"
 
+	router "github.com/c4erries/server/internal/app/apiserver/Routers"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -30,8 +32,8 @@ func (s *APIServer) Start() error {
 	s.configureRouter()
 
 	s.logger.Info("starting api server")
-
-	return http.ListenAndServe(s.config.BindAddr, s.router)
+	corsObj := handlers.AllowedOrigins([]string{"*"})
+	return http.ListenAndServe(s.config.BindAddr, handlers.CORS(corsObj)(s.router))
 }
 
 func (s *APIServer) configureLogger() error {
@@ -46,6 +48,7 @@ func (s *APIServer) configureLogger() error {
 
 func (s *APIServer) configureRouter() {
 	s.router.HandleFunc("/hello", s.handleHello())
+	router.ConfigureStatsSubRouter(s.router)
 }
 
 func (s *APIServer) handleHello() http.HandlerFunc {
