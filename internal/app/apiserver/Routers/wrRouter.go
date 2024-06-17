@@ -1,17 +1,12 @@
 package router
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
-
-type Rune struct {
-	Name   string `json:"Name"`
-	During int8   `json:"During"`
-}
 
 func ConfigureStatsSubRouter(router *mux.Router) *mux.Router {
 	subrouter := router.PathPrefix("/stats").Subrouter()
@@ -21,13 +16,11 @@ func ConfigureStatsSubRouter(router *mux.Router) *mux.Router {
 
 func handlePostWRStats() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		haste := Rune{"Haste", 9}
-		h, err := json.Marshal(haste)
+		file, err := os.ReadFile("C:/Users/C4erries/prj/Server/internal/app/apiserver/Routers/HeroesWr.json")
 		if err != nil {
 			log.Fatal(err)
-			return
 		}
-		_, err = w.Write(h)
+		_, err = w.Write(file)
 		if err != nil {
 			log.Fatal(err)
 		}
