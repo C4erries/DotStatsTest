@@ -49,6 +49,7 @@ func (s *APIServer) configureLogger() error {
 func (s *APIServer) configureRouter() {
 	s.router.HandleFunc("/hi", s.handleHello())
 	router.ConfigureStatsSubRouter(s.router)
+	router.ConfigureMatchListSubRouter(s.router)
 }
 
 func (s *APIServer) handleHello() http.HandlerFunc {
