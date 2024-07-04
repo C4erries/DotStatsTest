@@ -1,61 +1,37 @@
 package apiserver
 
 import (
-	"io"
+	"database/sql"
 	"net/http"
 
-	router "github.com/c4erries/server/internal/app/apiserver/Routers"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
+	"github.com/c4erries/server/internal/app/store/sqlstore"
+	"github.com/gorilla/sessions"
 )
 
-type APIServer struct {
-	config *Config
-	logger *logrus.Logger
-	router *mux.Router
-}
-
-func New(config *Config) *APIServer {
-	return &APIServer{
-		config: config,
-		logger: logrus.New(),
-		router: mux.NewRouter(),
-	}
-}
-
-func (s *APIServer) Start() error {
-	if err := s.configureLogger(); err != nil {
-		return err
-	}
-
-	s.configureRouter()
-
-	s.logger.Info("starting api server")
-	corsObj := handlers.AllowedOrigins([]string{"*"})
-	return http.ListenAndServe(s.config.BindAddr, handlers.CORS(corsObj)(s.router))
-}
-
-func (s *APIServer) configureLogger() error {
-	level, err := logrus.ParseLevel(s.config.LogLevel)
+func Start(config *Config) error {
+	db, err := newDB(config.DatabaseURL)
 	if err != nil {
 		return err
 	}
-	s.logger.SetLevel(level)
 
-	return nil
+	defer db.Close()
+
+	store := sqlstore.New(db)
+	sessionStore := sessions.NewCookieStore([]byte(config.SessionKey))
+	s := newServer(store, sessionStore)
+
+	return http.ListenAndServe(config.BindAddr, s)
 }
 
-func (s *APIServer) configureRouter() {
-	s.router.HandleFunc("/hi", s.handleHello())
-	router.ConfigureStatsSubRouter(s.router)
-	router.ConfigureMatchListSubRouter(s.router)
-	router.ConfigurePlayersRouter(s.router)
-	router.ConfigurePlayerProfileRouter(s.router)
-}
-
-func (s *APIServer) handleHello() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "hi")
+func newDB(databaseURL string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", databaseURL)
+	if err != nil {
+		return nil, err
 	}
+
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }

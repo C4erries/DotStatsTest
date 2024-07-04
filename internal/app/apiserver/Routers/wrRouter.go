@@ -8,6 +8,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type hero struct {
+	id       int
+	name     string
+	pickrate float32
+	winrate  float32
+}
+
 func ConfigureStatsSubRouter(router *mux.Router) *mux.Router {
 	subrouter := router.PathPrefix("/stats").Subrouter()
 	subrouter.HandleFunc("/wr", handlePostWRStats()).Methods("POST", "GET")
