@@ -50,6 +50,8 @@ func (s *APIServer) configureRouter() {
 	s.router.HandleFunc("/hi", s.handleHello())
 	router.ConfigureStatsSubRouter(s.router)
 	router.ConfigureMatchListSubRouter(s.router)
+	router.ConfigurePlayersRouter(s.router)
+	router.ConfigurePlayerProfileRouter(s.router)
 }
 
 func (s *APIServer) handleHello() http.HandlerFunc {
