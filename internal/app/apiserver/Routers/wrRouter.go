@@ -23,7 +23,7 @@ func ConfigureStatsSubRouter(router *mux.Router) *mux.Router {
 
 func handlePostWRStats() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		file, err := os.ReadFile("D:/DotStatsTest/internal/app/apiserver/Routers/HeroesWr.json")
+		file, err := os.ReadFile("jsons/HeroesWr.json")
 		if err != nil {
 			log.Fatal(err)
 		}

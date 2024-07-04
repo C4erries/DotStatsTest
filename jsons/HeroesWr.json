@@ -1,0 +1,27 @@
+[
+    {
+        "Name": "Axe",
+        "ImageUrl": "https://cdn.akamai.steamstatic.com/apps/dota2/images/dota_react/heroes/axe.png",
+        "Pickrate": 70,
+        "Winrate": 20
+    },
+    {
+        "Name": "Arc Warden",
+        "ImageUrl": "https://cdn.akamai.steamstatic.com/apps/dota2/images/dota_react/heroes/arc_warden.png",
+        "Pickrate": 10,
+        "Winrate": 1
+    },
+    {
+        "Name": "Zeus",
+        "ImageUrl": "https://cdn.akamai.steamstatic.com/apps/dota2/images/dota_react/heroes/zuus.png",
+        "Pickrate": 50,
+        "Winrate": 60
+    },
+    {
+        "Name": "Techies",
+        "ImageUrl": "https://cdn.akamai.steamstatic.com/apps/dota2/images/dota_react/heroes/techies.png",
+        "Pickrate": 60,
+        "Winrate": 99
+    }
+
+]
