@@ -8,11 +8,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// данные о игроке /player/{playerName}
 func ConfigurePlayerProfileRouter(router *mux.Router) {
 	subrouter := router.PathPrefix("/player").Subrouter()
 	subrouter.HandleFunc("/{playerName}", playerProfileHandler())
 }
 
+// хэндл получения данных о пользователе (нужно подключить бд и настроить проверку прав на доступ к запросу)
 func playerProfileHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
