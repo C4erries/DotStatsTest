@@ -12,7 +12,6 @@ import (
 	"github.com/c4erries/server/internal/app/model"
 	"github.com/c4erries/server/internal/app/store"
 	"github.com/google/uuid"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
@@ -61,9 +60,13 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Конфигурация роутера (запросов)
 func (s *server) configureRouter() {
 	s.router.Use(s.setRequestID)
-	s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
+	//две строки ниже что-то делают ? вроде нет, а должны
+	//s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
+	//s.router.Use(handlers.CORS(handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})))
+
 	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/sessions", s.handleSessionsCreate()).Methods("POST")
+
 	router.ConfigureMatchListSubRouter(s.router)
 	router.ConfigurePlayersRouter(s.router)
 	router.ConfigurePlayerProfileRouter(s.router)
@@ -122,7 +125,6 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 		Password string `json:"password"`
 		PlayerID int    `json:"playerid"`
 	}
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := &request{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
