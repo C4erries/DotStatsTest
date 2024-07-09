@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net/http"
 
+	router "github.com/c4erries/server/internal/app/apiserver/Routers"
 	"github.com/c4erries/server/internal/app/model"
 	"github.com/c4erries/server/internal/app/store"
 	"github.com/google/uuid"
@@ -63,7 +64,9 @@ func (s *server) configureRouter() {
 	s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
 	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/sessions", s.handleSessionsCreate()).Methods("POST")
-
+	router.ConfigureMatchListSubRouter(s.router)
+	router.ConfigurePlayersRouter(s.router)
+	router.ConfigurePlayerProfileRouter(s.router)
 	private := s.router.PathPrefix("/private").Subrouter()
 	private.Use(s.authenticateUser)
 	private.HandleFunc("/whoami", s.handleWhoami()).Methods("GET")
