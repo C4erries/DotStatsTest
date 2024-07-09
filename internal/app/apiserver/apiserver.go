@@ -20,7 +20,6 @@ func Start(config *Config) error {
 	store := sqlstore.New(db)
 	sessionStore := sessions.NewCookieStore([]byte(config.SessionKey))
 	s := newServer(store, sessionStore)
-
 	// используется rs/cors, только так cors разрешает post запрос с фронтенда
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{config.FrontendUrl}, //адресса, имеющие доступ к серверу
