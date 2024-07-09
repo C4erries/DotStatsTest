@@ -114,8 +114,10 @@ func (s *server) handleWhoami() http.HandlerFunc {
 // Хэндл запроса на создание пользователей (Использует служебные методы ошибки и ответа)
 func (s *server) handleUsersCreate() http.HandlerFunc {
 	type request struct {
+		Nickname string `json:"nickname"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		PlayerID int    `json:"playerid"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -126,9 +128,12 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 		}
 
 		u := &model.User{
+			Nickname: req.Nickname,
 			Email:    req.Email,
 			Password: req.Password,
+			PlayerID: req.PlayerID,
 		}
+
 		if err := s.store.User().Create(u); err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
