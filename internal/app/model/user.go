@@ -8,10 +8,12 @@ import (
 
 // Структура для операций с пользователями из БД
 type User struct {
+	Nickname          string `json:"nickname"`
 	ID                int    `json:"id"`
 	Email             string `json:"email"`
 	Password          string `json:"password,omitempty"`
 	EncryptedPassword string `json:"-"`
+	PlayerID          int    `json:"playerid"`
 }
 
 // Метод валидации данных пользователя
@@ -19,7 +21,8 @@ func (u *User) Validate() error {
 	//ВАЖНО здесь используется кастомная валидация с условием для исключения ситуации, когда пользователя
 	//Запрашивают из БД, где хранится только зашифрованный пароль. Т.е. пароль обязателен только если в БД его нет
 	return validation.ValidateStruct(u, validation.Field(&u.Email, validation.Required, is.Email),
-		validation.Field(&u.Password, validation.By(requiredIf(u.EncryptedPassword == "")), validation.Length(6, 100)))
+		validation.Field(&u.Password, validation.By(requiredIf(u.EncryptedPassword == "")), validation.Length(6, 100)),
+		validation.Field(&u.Nickname, validation.Required), validation.Field(&u.PlayerID, validation.Required))
 }
 
 // Метод отлова ошибок перед созданием

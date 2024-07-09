@@ -3,7 +3,7 @@ package teststore_test
 import (
 	"testing"
 
-	"github.com/c4erries/server/internal/app/model"
+	model "github.com/c4erries/server/internal/app/model"
 	"github.com/c4erries/server/internal/app/store"
 	"github.com/c4erries/server/internal/app/store/teststore"
 	"github.com/stretchr/testify/assert"
