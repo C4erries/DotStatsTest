@@ -56,3 +56,11 @@ func (r *UserRepository) Find(id int) (*model.User, error) {
 
 	return u, nil
 }
+
+func (r *UserRepository) ListAll() ([]*model.User, error) {
+	var Us []*model.User
+	for _, u := range r.users {
+		Us = append(Us, u)
+	}
+	return Us, nil
+}

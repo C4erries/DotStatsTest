@@ -11,6 +11,7 @@ type UserRepository interface {
 	Find(int) (*model.User, error)
 	FindByEmail(string) (*model.User, error)
 	FindByNickname(string) (*model.User, error)
+	ListAll() ([]*model.User, error)
 }
 
 type MatchRepository interface {
