@@ -46,3 +46,15 @@ func TestUserRepository_Find(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, u2)
 }
+
+func TestUserRepository_ListAll(t *testing.T) {
+	db, teardown := sqlstore.TestDB(t, databaseURL)
+	defer teardown("users")
+
+	s := sqlstore.New(db)
+	u1 := model.TestUser(t)
+	s.User().Create(u1)
+	us, err := s.User().ListAll()
+	assert.NoError(t, err)
+	assert.NotNil(t, us)
+}

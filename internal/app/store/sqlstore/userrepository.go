@@ -64,3 +64,23 @@ func (r *UserRepository) Find(id int) (*model.User, error) {
 
 	return u, nil
 }
+
+// Выдать всех пользователей
+func (r *UserRepository) ListAll() ([]*model.User, error) {
+
+	var Us []*model.User
+
+	rows, err := r.store.db.Query("SELECT * FROM users")
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		u := &model.User{}
+		if err := rows.Scan(&u.ID, &u.Nickname, &u.Email, &u.EncryptedPassword, &u.PlayerID); err != nil {
+			return nil, err
+		}
+		Us = append(Us, u)
+	}
+
+	return Us, nil
+}
