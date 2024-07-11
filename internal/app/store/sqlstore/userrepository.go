@@ -46,6 +46,22 @@ func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 
 	return u, nil
 }
+func (r *UserRepository) FindByNickname(nickname string) (*model.User, error) {
+
+	u := &model.User{}
+
+	if err := r.store.db.QueryRow(
+		"SELECT id, nickname, email, encrypted_password, player_id FROM users WHERE nickname=$1",
+		nickname).Scan(&u.ID, &u.Nickname, &u.Email, &u.EncryptedPassword, &u.PlayerID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.ErrRecordNotFound
+		}
+
+		return nil, err
+	}
+
+	return u, nil
+}
 
 // Поиск пользователя по id
 func (r *UserRepository) Find(id int) (*model.User, error) {

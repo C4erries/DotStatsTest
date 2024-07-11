@@ -5,21 +5,27 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/c4erries/server/internal/app/store"
 	"github.com/gorilla/mux"
 )
 
 // данные о игроке /player/{playerName}
-func ConfigurePlayerProfileRouter(router *mux.Router) {
+func ConfigurePlayerProfileRouter(router *mux.Router, store store.Store) {
 	subrouter := router.PathPrefix("/player").Subrouter()
-	subrouter.HandleFunc("/{playerName}", playerProfileHandler())
+	store.User()
+	subrouter.HandleFunc("/{playerName}", playerProfileHandler(store))
 }
 
 // хэндл получения данных о пользователе (нужно подключить бд и настроить проверку прав на доступ к запросу)
-func playerProfileHandler() http.HandlerFunc {
+func playerProfileHandler(s store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		name := vars["playerName"]
-		js, err := json.Marshal(name)
+		u, err := s.User().FindByNickname(name)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+		}
+		js, err := json.Marshal(u)
 		if err != nil {
 			log.Fatal(err)
 		}
