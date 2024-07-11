@@ -15,6 +15,7 @@ type hero struct {
 	winrate  float32
 }
 
+// тестовый роутер ( претендент на корректировку/удаление )
 func ConfigureStatsSubRouter(router *mux.Router) *mux.Router {
 	subrouter := router.PathPrefix("/stats").Subrouter()
 	subrouter.HandleFunc("/wr", handlePostWRStats()).Methods("POST", "GET")
