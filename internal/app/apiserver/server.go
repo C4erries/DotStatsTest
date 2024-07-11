@@ -66,7 +66,7 @@ func (s *server) configureRouter() {
 
 	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/sessions", s.handleSessionsCreate()).Methods("POST")
-
+	s.router.HandleFunc("/allusers", s.handleUsersListAll()).Methods("GET")
 	router.ConfigureMatchListSubRouter(s.router)
 	router.ConfigurePlayersRouter(s.router)
 	router.ConfigurePlayerProfileRouter(s.router)
@@ -146,6 +146,25 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 
 		u.Sanitize()
 		s.respond(w, r, http.StatusCreated, u)
+	}
+}
+
+// Хэндл запроса на список всех пользователей
+func (s *server) handleUsersListAll() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		Us, err := s.store.User().ListAll()
+		if err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+
+		data, err := json.Marshal(Us)
+		if err != nil {
+			s.error(w, r, http.StatusUnprocessableEntity, err)
+		}
+
+		w.Write(data)
 	}
 }
 
