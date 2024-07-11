@@ -63,13 +63,12 @@ func (s *server) configureRouter() {
 	//две строки ниже что-то делают ? вроде нет, а должны
 	//s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
 	//s.router.Use(handlers.CORS(handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})))
-
 	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/sessions", s.handleSessionsCreate()).Methods("POST")
 
 	router.ConfigureMatchListSubRouter(s.router)
 	router.ConfigurePlayersRouter(s.router)
-	router.ConfigurePlayerProfileRouter(s.router)
+	router.ConfigurePlayerProfileRouter(s.router, s.store)
 	private := s.router.PathPrefix("/private").Subrouter()
 	private.Use(s.authenticateUser)
 	private.HandleFunc("/whoami", s.handleWhoami()).Methods("GET")
