@@ -125,7 +125,15 @@ func (s *server) handleSessionTerminate() http.HandlerFunc {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
+		c := &http.Cookie{
+			Name:     "usersession",
+			Value:    "",
+			Path:     "/",
+			MaxAge:   -1,
+			HttpOnly: true,
+		}
 
+		http.SetCookie(w, c)
 		s.respond(w, r, http.StatusOK, nil)
 
 	})
