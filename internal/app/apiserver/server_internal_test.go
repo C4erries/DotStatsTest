@@ -71,9 +71,11 @@ func TestServer_HandleUsersCreate(t *testing.T) {
 	}{
 		{
 			name: "valid",
-			payload: map[string]string{
+			payload: map[string]interface{}{
 				"email":    "user@example.org",
 				"password": "password",
+				"nickname": "gay",
+				"playerid": 1311113,
 			},
 			expectedCode: http.StatusCreated,
 		},
@@ -84,9 +86,11 @@ func TestServer_HandleUsersCreate(t *testing.T) {
 		},
 		{
 			name: "invalid params",
-			payload: map[string]string{
+			payload: map[string]interface{}{
 				"email":    "invalid",
 				"password": "",
+				"nickname": "gay",
+				"playerid": 1311113,
 			},
 			expectedCode: http.StatusUnprocessableEntity,
 		},

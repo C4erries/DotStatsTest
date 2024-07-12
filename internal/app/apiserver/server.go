@@ -63,13 +63,12 @@ func (s *server) configureRouter() {
 	//две строки ниже что-то делают ? вроде нет, а должны
 	//s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
 	//s.router.Use(handlers.CORS(handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})))
-
 	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/sessions", s.handleSessionsCreate()).Methods("POST")
-
+	s.router.HandleFunc("/allusers", s.handleUsersListAll()).Methods("GET")
 	router.ConfigureMatchListSubRouter(s.router)
 	router.ConfigurePlayersRouter(s.router)
-	router.ConfigurePlayerProfileRouter(s.router)
+	router.ConfigurePlayerProfileRouter(s.router, s.store)
 	private := s.router.PathPrefix("/private").Subrouter()
 	private.Use(s.authenticateUser)
 	private.HandleFunc("/whoami", s.handleWhoami()).Methods("GET")
@@ -120,8 +119,10 @@ func (s *server) handleWhoami() http.HandlerFunc {
 // Хэндл запроса на создание пользователей (Использует служебные методы ошибки и ответа)
 func (s *server) handleUsersCreate() http.HandlerFunc {
 	type request struct {
+		Nickname string `json:"nickname"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		PlayerID int    `json:"playerid"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := &request{}
@@ -131,9 +132,12 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 		}
 
 		u := &model.User{
+			Nickname: req.Nickname,
 			Email:    req.Email,
 			Password: req.Password,
+			PlayerID: req.PlayerID,
 		}
+
 		if err := s.store.User().Create(u); err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
@@ -141,6 +145,25 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 
 		u.Sanitize()
 		s.respond(w, r, http.StatusCreated, u)
+	}
+}
+
+// Хэндл запроса на список всех пользователей
+func (s *server) handleUsersListAll() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		Us, err := s.store.User().ListAll()
+		if err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+
+		data, err := json.Marshal(Us)
+		if err != nil {
+			s.error(w, r, http.StatusUnprocessableEntity, err)
+		}
+
+		w.Write(data)
 	}
 }
 

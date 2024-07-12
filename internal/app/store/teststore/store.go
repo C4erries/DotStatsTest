@@ -1,6 +1,7 @@
 package teststore
 
 import (
+	"github.com/c4erries/server/internal/app/matchmodel"
 	"github.com/c4erries/server/internal/app/model"
 	"github.com/c4erries/server/internal/app/store"
 )
@@ -9,7 +10,8 @@ import (
 
 // (ТЕСТ) Структура хранилища (конфигурация, БД, репозиторий пользователей (для доступа к хранилищу через пользователей))
 type Store struct {
-	UserRepository *UserRepository
+	UserRepository  *UserRepository
+	MatchRepository *MatchRepository
 }
 
 // Открытие (создание) БД
@@ -17,7 +19,6 @@ func New() *Store {
 	return &Store{}
 }
 
-// Проверка на существование/добавление пользователя
 func (s *Store) User() store.UserRepository {
 	if s.UserRepository != nil {
 		return s.UserRepository
@@ -29,4 +30,17 @@ func (s *Store) User() store.UserRepository {
 	}
 
 	return s.UserRepository
+}
+
+func (s *Store) Match() store.MatchRepository {
+	if s.MatchRepository != nil {
+		return s.MatchRepository
+	}
+
+	s.MatchRepository = &MatchRepository{
+		store:   s,
+		matches: make(map[int]*matchmodel.Match),
+	}
+
+	return s.MatchRepository
 }
