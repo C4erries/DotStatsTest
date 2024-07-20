@@ -3,6 +3,7 @@ package store
 import (
 	"github.com/c4erries/server/internal/app/matchmodel"
 	"github.com/c4erries/server/internal/app/model"
+	"github.com/c4erries/server/internal/app/statsmodel"
 )
 
 // Интерфейс репозитория пользователей
@@ -16,4 +17,9 @@ type UserRepository interface {
 
 type MatchRepository interface {
 	Add(*matchmodel.Match) error
+}
+
+type StatsRepository interface {
+	NewPlayer(*statsmodel.Stats) error
+	UpdateStats(*statsmodel.Stats) error
 }

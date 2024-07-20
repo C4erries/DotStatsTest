@@ -7,9 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	router "github.com/c4erries/server/internal/app/apiserver/Routers"
 	"github.com/c4erries/server/internal/app/model"
+	"github.com/c4erries/server/internal/app/statsmodel"
 	"github.com/c4erries/server/internal/app/store"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -65,6 +67,7 @@ func (s *server) configureRouter() {
 	//s.router.Use(handlers.CORS(handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})))
 	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/sessions", s.handleSessionsCreate()).Methods("POST")
+	s.router.HandleFunc("/statsupdate", s.handleStatUpdateReq()).Methods("POST")
 	s.router.HandleFunc("/allusers", s.handleUsersListAll()).Methods("GET")
 	router.ConfigureMatchListSubRouter(s.router)
 	router.ConfigurePlayersRouter(s.router)
@@ -132,7 +135,6 @@ func (s *server) handleSessionTerminate() http.HandlerFunc {
 			MaxAge:   -1,
 			HttpOnly: true,
 		}
-
 		http.SetCookie(w, c)
 		s.respond(w, r, http.StatusOK, nil)
 
@@ -168,7 +170,16 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 			PlayerID: req.PlayerID,
 		}
 
+		st := &statsmodel.Stats{
+			PlayerID: req.PlayerID,
+		}
+
 		if err := s.store.User().Create(u); err != nil {
+			s.error(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		if err := s.store.Stats().NewPlayer(st); err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
@@ -195,6 +206,89 @@ func (s *server) handleUsersListAll() http.HandlerFunc {
 
 		w.Write(data)
 	}
+}
+
+// Обновление статов
+func (s *server) handleStatUpdateReq() http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		st := &statsmodel.Stats{}
+		if err := json.NewDecoder(r.Body).Decode(st); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		pstat, err := http.Get("https://api.opendota.com/api/players/" + strconv.Itoa(st.PlayerID))
+		if err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+
+		defer pstat.Body.Close()
+
+		mstat, err := http.Get("https://api.opendota.com/api/players/" + strconv.Itoa(st.PlayerID) + "/matches")
+		if err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+
+		defer mstat.Body.Close()
+
+		hstat, err := http.Get("https://api.opendota.com/api/players/" + strconv.Itoa(st.PlayerID) + "/heroes")
+		if err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+
+		defer hstat.Body.Close()
+
+		wstat, err := http.Get("https://api.opendota.com/api/players/" + strconv.Itoa(st.PlayerID) + "/wordcloud")
+		if err != nil {
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+
+		defer wstat.Body.Close()
+
+		var data interface{}
+
+		if err := json.NewDecoder(pstat.Body).Decode(&data); err != nil {
+			s.error(w, r, http.StatusConflict, err)
+			return
+		}
+
+		st.PlayerStats = statsmodel.PropertyMap{"player": data}
+		data = nil
+
+		if err := json.NewDecoder(mstat.Body).Decode(&data); err != nil {
+			s.error(w, r, http.StatusAlreadyReported, err)
+			return
+		}
+
+		st.MatchesStats = statsmodel.PropertyMap{"matches": data}
+		data = nil
+
+		if err := json.NewDecoder(hstat.Body).Decode(&data); err != nil {
+			s.error(w, r, http.StatusConflict, err)
+			return
+		}
+
+		st.HeroStats = statsmodel.PropertyMap{"heroes": data}
+		data = nil
+
+		if err := json.NewDecoder(wstat.Body).Decode(&data); err != nil {
+			s.error(w, r, http.StatusConflict, err)
+			return
+		}
+
+		st.WordCloud = statsmodel.PropertyMap{"wordcloud": data}
+
+		if err := s.store.Stats().UpdateStats(st); err != nil {
+			s.error(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		s.respond(w, r, http.StatusOK, st)
+	})
 }
 
 // Хэндл запроса на вход (новая сессия) пользователя

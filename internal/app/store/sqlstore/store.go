@@ -14,6 +14,7 @@ type Store struct {
 	db              *sql.DB
 	UserRepository  *UserRepository
 	MatchRepository *MatchRepository
+	StatsRepository *StatsRepository
 }
 
 // Открытие (создание) БД
@@ -46,4 +47,16 @@ func (s *Store) Match() store.MatchRepository {
 	}
 
 	return s.MatchRepository
+}
+
+func (s *Store) Stats() store.StatsRepository {
+	if s.StatsRepository != nil {
+		return s.StatsRepository
+	}
+
+	s.StatsRepository = &StatsRepository{
+		store: s,
+	}
+
+	return s.StatsRepository
 }
