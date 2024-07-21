@@ -3,7 +3,7 @@ package sqlstore_test
 import (
 	"testing"
 
-	"github.com/c4erries/server/internal/app/model"
+	model "github.com/c4erries/server/internal/app/model"
 	"github.com/c4erries/server/internal/app/store"
 	"github.com/c4erries/server/internal/app/store/sqlstore"
 	"github.com/stretchr/testify/assert"
@@ -45,4 +45,16 @@ func TestUserRepository_Find(t *testing.T) {
 	u2, err := s.User().Find(u1.ID)
 	assert.NoError(t, err)
 	assert.NotNil(t, u2)
+}
+
+func TestUserRepository_ListAll(t *testing.T) {
+	db, teardown := sqlstore.TestDB(t, databaseURL)
+	defer teardown("users")
+
+	s := sqlstore.New(db)
+	u1 := model.TestUser(t)
+	s.User().Create(u1)
+	us, err := s.User().ListAll()
+	assert.NoError(t, err)
+	assert.NotNil(t, us)
 }

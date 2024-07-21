@@ -3,7 +3,7 @@ package model_test
 import (
 	"testing"
 
-	"github.com/c4erries/server/internal/app/model"
+	model "github.com/c4erries/server/internal/app/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +17,8 @@ func TestUser_Validate(t *testing.T) {
 		{
 			name: "valid",
 			u: func() *model.User {
-				return model.TestUser(t)
+				u := model.TestUser(t)
+				return u
 			},
 			isValid: true,
 		},
@@ -68,6 +69,16 @@ func TestUser_Validate(t *testing.T) {
 			u: func() *model.User {
 				u := model.TestUser(t)
 				u.Password = "short"
+				return u
+			},
+			isValid: false,
+		},
+
+		{
+			name: "No nick",
+			u: func() *model.User {
+				u := model.TestUser(t)
+				u.Nickname = ""
 				return u
 			},
 			isValid: false,
