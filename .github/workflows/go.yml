@@ -22,7 +22,10 @@ jobs:
         go-version: '1.22.4'
 
     - name: Build
-      run: go build -v ./...
+      run: go build -v ./cmd/apiserver
 
     - name: Test
-      run: go test -v ./...
+      run: go test -v -race -timeout 30s ./...
+
+    - name: Run
+      run: go run ./cmd/apiserver/main.go
