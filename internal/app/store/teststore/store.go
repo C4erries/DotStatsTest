@@ -3,6 +3,7 @@ package teststore
 import (
 	"github.com/c4erries/server/internal/app/matchmodel"
 	"github.com/c4erries/server/internal/app/model"
+	"github.com/c4erries/server/internal/app/statsmodel"
 	"github.com/c4erries/server/internal/app/store"
 )
 
@@ -12,6 +13,7 @@ import (
 type Store struct {
 	UserRepository  *UserRepository
 	MatchRepository *MatchRepository
+	StatsRepository *StatsRepository
 }
 
 // Открытие (создание) БД
@@ -43,4 +45,17 @@ func (s *Store) Match() store.MatchRepository {
 	}
 
 	return s.MatchRepository
+}
+
+func (s *Store) Stats() store.StatsRepository {
+	if s.StatsRepository != nil {
+		return s.StatsRepository
+	}
+
+	s.StatsRepository = &StatsRepository{
+		store:     s,
+		statistic: make(map[int]*statsmodel.Stats),
+	}
+
+	return s.StatsRepository
 }
